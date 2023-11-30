@@ -154,6 +154,7 @@ pub enum ErrorCode {
     TransfersNotAllowed,
     UpstreamOrderCreationFailed,
     UrlInvalid,
+    AuthenticationRequired
 }
 
 impl std::fmt::Display for ErrorCode {
