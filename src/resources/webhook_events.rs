@@ -424,6 +424,7 @@ pub struct NotificationEventData {
 #[serde(tag = "object", rename_all = "snake_case")]
 pub enum EventObject {
     Account(Account),
+    #[cfg(feature = "connect")]
     #[serde(rename = "capability")]
     AccountCapabilities(AccountCapabilities),
     Application(Application),
@@ -432,6 +433,7 @@ pub enum EventObject {
     ApplicationFeeRefund(ApplicationFeeRefund),
     Balance(Balance),
     BankAccount(BankAccount),
+    #[cfg(feature = "billing")]
     #[serde(rename = "billing_portal.configuration")]
     BillingPortalConfiguration(BillingPortalConfiguration),
     Card(Card),
@@ -458,6 +460,7 @@ pub enum EventObject {
     IssuingTransaction(IssuingTransaction),
     Mandate(Mandate),
     PaymentIntent(PaymentIntent),
+    #[cfg(feature = "checkout")]
     PaymentLink(PaymentLink),
     PaymentMethod(PaymentMethod),
     Payout(Payout),
@@ -465,7 +468,9 @@ pub enum EventObject {
     Plan(Plan),
     Price(Price),
     Product(Product),
+    #[cfg(feature = "billing")]
     PromotionCode(PromotionCode),
+    #[cfg(feature = "billing")]
     Quote(Quote),
     Refund(Refund),
     Review(Review),
