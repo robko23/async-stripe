@@ -19,6 +19,7 @@ pub mod core {
     pub mod billing_details;
     pub mod cash_balance;
     pub mod charge;
+    pub mod connect_account_reference;
     pub mod custom_unit_amount;
     pub mod customer;
     pub mod dispute;
@@ -34,6 +35,7 @@ pub mod core {
     pub mod payment_method_details_card_wallet_apple_pay;
     pub mod payment_method_details_card_wallet_google_pay;
     pub mod payment_method_options_customer_balance_eu_bank_account;
+    pub mod payment_method_options_us_bank_account_mandate_options;
     pub mod payout;
     pub mod platform_tax_fee;
     pub mod price;
@@ -105,6 +107,7 @@ pub mod billing {
     pub mod subscription_item;
     pub mod subscription_item_billing_thresholds;
     pub mod subscription_schedule;
+    pub mod subscriptions_trials_resource_trial_settings;
     pub mod tax_id;
     pub mod tax_rate;
     pub mod usage_record;

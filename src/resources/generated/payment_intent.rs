@@ -15,7 +15,7 @@ use crate::resources::{
     PaymentIntentOffSession, PaymentMethod,
     PaymentMethodConfigBizPaymentMethodConfigurationDetails,
     PaymentMethodDetailsCardInstallmentsPlan, PaymentMethodOptionsCustomerBalanceEuBankAccount,
-    PaymentSource, Review, Shipping,
+    PaymentMethodOptionsUsBankAccountMandateOptions, PaymentSource, Review, Shipping,
 };
 
 /// The resource representing a Stripe "PaymentIntent".
@@ -73,6 +73,7 @@ pub struct PaymentIntent {
     /// Make sure that you have TLS enabled on any page that includes the client secret.  Refer to our docs to [accept a payment](https://stripe.com/docs/payments/accept-a-payment?ui=elements) and learn about how `client_secret` should be handled.
     pub client_secret: Option<String>,
 
+    /// Describes whether we can confirm this PaymentIntent automatically, or if it requires customer action to confirm the payment.
     pub confirmation_method: PaymentIntentConfirmationMethod,
 
     /// Time at which the object was created.
@@ -313,6 +314,10 @@ pub struct PaymentIntentNextAction {
 
     #[serde(skip_serializing_if = "Option::is_none")]
     pub redirect_to_url: Option<PaymentIntentNextActionRedirectToUrl>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub swish_handle_redirect_or_display_qr_code:
+        Option<PaymentIntentNextActionSwishHandleRedirectOrDisplayQrCode>,
 
     /// Type of the next action to perform, one of `redirect_to_url`, `use_stripe_sdk`, `alipay_handle_redirect`, `oxxo_display_details`, or `verify_with_microdeposits`.
     #[serde(rename = "type")]
@@ -668,6 +673,35 @@ pub struct PaymentIntentNextActionRedirectToUrl {
 }
 
 #[derive(Clone, Debug, Default, Deserialize, Serialize)]
+pub struct PaymentIntentNextActionSwishHandleRedirectOrDisplayQrCode {
+    /// The URL to the hosted Swish instructions page, which allows customers to view the QR code.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub hosted_instructions_url: Option<String>,
+
+    /// The url for mobile redirect based auth.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub mobile_auth_url: Option<String>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub qr_code: Option<PaymentIntentNextActionSwishQrCode>,
+}
+
+#[derive(Clone, Debug, Default, Deserialize, Serialize)]
+pub struct PaymentIntentNextActionSwishQrCode {
+    /// The raw data string used to generate QR code, it should be used together with QR code library.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub data: Option<String>,
+
+    /// The image_url_png string used to render QR code.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub image_url_png: Option<String>,
+
+    /// The image_url_svg string used to render QR code.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub image_url_svg: Option<String>,
+}
+
+#[derive(Clone, Debug, Default, Deserialize, Serialize)]
 pub struct PaymentIntentNextActionVerifyWithMicrodeposits {
     /// The timestamp when the microdeposits are expected to land.
     pub arrival_date: Timestamp,
@@ -825,6 +859,9 @@ pub struct PaymentIntentPaymentMethodOptions {
     pub sofort: Option<PaymentMethodOptionsSofort>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
+    pub swish: Option<PaymentIntentPaymentMethodOptionsSwish>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub us_bank_account: Option<PaymentIntentPaymentMethodOptionsUsBankAccount>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -891,7 +928,7 @@ pub struct PaymentIntentPaymentMethodOptionsCard {
     pub request_extended_authorization:
         Option<PaymentIntentPaymentMethodOptionsCardRequestExtendedAuthorization>,
 
-    /// Request ability to [increment](https://stripe.com/docs/payments/incremental-authorization) for this PaymentIntent.
+    /// Request ability to [increment the authorization](https://stripe.com/docs/payments/incremental-authorization) for this PaymentIntent.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub request_incremental_authorization:
         Option<PaymentIntentPaymentMethodOptionsCardRequestIncrementalAuthorization>,
@@ -907,8 +944,7 @@ pub struct PaymentIntentPaymentMethodOptionsCard {
     /// We strongly recommend that you rely on our SCA Engine to automatically prompt your customers for authentication based on risk level and [other requirements](https://stripe.com/docs/strong-customer-authentication).
     ///
     /// However, if you wish to request 3D Secure based on logic from your own fraud engine, provide this option.
-    /// Permitted values include: `automatic` or `any`.
-    /// If not provided, defaults to `automatic`.
+    /// If not provided, this value defaults to `automatic`.
     /// Read our guide on [manually requesting 3D Secure](https://stripe.com/docs/payments/3d-secure#manual-three-ds) for more information on how this configuration interacts with Radar and our SCA Engine.
     pub request_three_d_secure: Option<PaymentIntentPaymentMethodOptionsCardRequestThreeDSecure>,
 
@@ -1004,9 +1040,27 @@ pub struct PaymentIntentPaymentMethodOptionsSepaDebit {
 pub struct PaymentIntentPaymentMethodOptionsMandateOptionsSepaDebit {}
 
 #[derive(Clone, Debug, Default, Deserialize, Serialize)]
+pub struct PaymentIntentPaymentMethodOptionsSwish {
+    /// The order ID displayed in the Swish app after the payment is authorized.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub reference: Option<String>,
+
+    /// Indicates that you intend to make future payments with this PaymentIntent's payment method.
+    ///
+    /// Providing this parameter will [attach the payment method](https://stripe.com/docs/payments/save-during-payment) to the PaymentIntent's Customer, if present, after the PaymentIntent is confirmed and any required actions from the user are complete.
+    ///
+    /// If no Customer was provided, the payment method can still be [attached](https://stripe.com/docs/api/payment_methods/attach) to a Customer after the transaction completes.  When processing card payments, Stripe also uses `setup_future_usage` to dynamically optimize your payment flow and comply with regional legislation and network rules, such as [SCA](https://stripe.com/docs/strong-customer-authentication).
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub setup_future_usage: Option<PaymentIntentPaymentMethodOptionsSwishSetupFutureUsage>,
+}
+
+#[derive(Clone, Debug, Default, Deserialize, Serialize)]
 pub struct PaymentIntentPaymentMethodOptionsUsBankAccount {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub financial_connections: Option<LinkedAccountOptionsUsBankAccount>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub mandate_options: Option<PaymentMethodOptionsUsBankAccountMandateOptions>,
 
     /// Preferred transaction settlement speed.
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -1541,6 +1595,7 @@ pub struct CreatePaymentIntent<'a> {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub confirm: Option<bool>,
 
+    /// Describes whether we can confirm this PaymentIntent automatically, or if it requires customer action to confirm the payment.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub confirmation_method: Option<PaymentIntentConfirmationMethod>,
 
@@ -2098,6 +2153,10 @@ pub struct CreatePaymentIntentPaymentMethodData {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub sofort: Option<CreatePaymentIntentPaymentMethodDataSofort>,
 
+    /// If this is a `swish` PaymentMethod, this hash contains details about the Swish payment method.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub swish: Option<CreatePaymentIntentPaymentMethodDataSwish>,
+
     /// The type of the PaymentMethod.
     ///
     /// An additional hash is included on the PaymentMethod with a name matching this value.
@@ -2232,7 +2291,7 @@ pub struct CreatePaymentIntentPaymentMethodOptions {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub promptpay: Option<CreatePaymentIntentPaymentMethodOptionsPromptpay>,
 
-    /// If this is a `revolut_pay` PaymentMethod, this sub-hash contains details about the Demo Pay payment method options.
+    /// If this is a `revolut_pay` PaymentMethod, this sub-hash contains details about the Revolut Pay payment method options.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub revolut_pay: Option<CreatePaymentIntentPaymentMethodOptionsRevolutPay>,
 
@@ -2243,6 +2302,10 @@ pub struct CreatePaymentIntentPaymentMethodOptions {
     /// If this is a `sofort` PaymentMethod, this sub-hash contains details about the SOFORT payment method options.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub sofort: Option<CreatePaymentIntentPaymentMethodOptionsSofort>,
+
+    /// If this is a `Swish` PaymentMethod, this sub-hash contains details about the Swish payment method options.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub swish: Option<CreatePaymentIntentPaymentMethodOptionsSwish>,
 
     /// If this is a `us_bank_account` PaymentMethod, this sub-hash contains details about the US bank account payment method options.
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -2443,6 +2506,10 @@ pub struct UpdatePaymentIntentPaymentMethodData {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub sofort: Option<UpdatePaymentIntentPaymentMethodDataSofort>,
 
+    /// If this is a `swish` PaymentMethod, this hash contains details about the Swish payment method.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub swish: Option<UpdatePaymentIntentPaymentMethodDataSwish>,
+
     /// The type of the PaymentMethod.
     ///
     /// An additional hash is included on the PaymentMethod with a name matching this value.
@@ -2577,7 +2644,7 @@ pub struct UpdatePaymentIntentPaymentMethodOptions {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub promptpay: Option<UpdatePaymentIntentPaymentMethodOptionsPromptpay>,
 
-    /// If this is a `revolut_pay` PaymentMethod, this sub-hash contains details about the Demo Pay payment method options.
+    /// If this is a `revolut_pay` PaymentMethod, this sub-hash contains details about the Revolut Pay payment method options.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub revolut_pay: Option<UpdatePaymentIntentPaymentMethodOptionsRevolutPay>,
 
@@ -2588,6 +2655,10 @@ pub struct UpdatePaymentIntentPaymentMethodOptions {
     /// If this is a `sofort` PaymentMethod, this sub-hash contains details about the SOFORT payment method options.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub sofort: Option<UpdatePaymentIntentPaymentMethodOptionsSofort>,
+
+    /// If this is a `Swish` PaymentMethod, this sub-hash contains details about the Swish payment method options.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub swish: Option<UpdatePaymentIntentPaymentMethodOptionsSwish>,
 
     /// If this is a `us_bank_account` PaymentMethod, this sub-hash contains details about the US bank account payment method options.
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -2824,6 +2895,9 @@ pub struct CreatePaymentIntentPaymentMethodDataSofort {
 }
 
 #[derive(Clone, Debug, Default, Deserialize, Serialize)]
+pub struct CreatePaymentIntentPaymentMethodDataSwish {}
+
+#[derive(Clone, Debug, Default, Deserialize, Serialize)]
 pub struct CreatePaymentIntentPaymentMethodDataUsBankAccount {
     /// Account holder type: individual or company.
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -2870,7 +2944,7 @@ pub struct CreatePaymentIntentPaymentMethodOptionsAcssDebit {
     pub setup_future_usage:
         Option<CreatePaymentIntentPaymentMethodOptionsAcssDebitSetupFutureUsage>,
 
-    /// Verification method for the intent.
+    /// Bank account verification method.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub verification_method:
         Option<CreatePaymentIntentPaymentMethodOptionsAcssDebitVerificationMethod>,
@@ -3050,7 +3124,7 @@ pub struct CreatePaymentIntentPaymentMethodOptionsCard {
     pub request_extended_authorization:
         Option<CreatePaymentIntentPaymentMethodOptionsCardRequestExtendedAuthorization>,
 
-    /// Request ability to [increment](https://stripe.com/docs/payments/incremental-authorization) for this PaymentIntent.
+    /// Request ability to [increment the authorization](https://stripe.com/docs/payments/incremental-authorization) for this PaymentIntent.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub request_incremental_authorization:
         Option<CreatePaymentIntentPaymentMethodOptionsCardRequestIncrementalAuthorization>,
@@ -3067,8 +3141,7 @@ pub struct CreatePaymentIntentPaymentMethodOptionsCard {
     /// We strongly recommend that you rely on our SCA Engine to automatically prompt your customers for authentication based on risk level and [other requirements](https://stripe.com/docs/strong-customer-authentication).
     ///
     /// However, if you wish to request 3D Secure based on logic from your own fraud engine, provide this option.
-    /// Permitted values include: `automatic` or `any`.
-    /// If not provided, defaults to `automatic`.
+    /// If not provided, this value defaults to `automatic`.
     /// Read our guide on [manually requesting 3D Secure](https://stripe.com/docs/payments/3d-secure#manual-three-ds) for more information on how this configuration interacts with Radar and our SCA Engine.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub request_three_d_secure:
@@ -3448,11 +3521,30 @@ pub struct CreatePaymentIntentPaymentMethodOptionsSofort {
 }
 
 #[derive(Clone, Debug, Default, Deserialize, Serialize)]
+pub struct CreatePaymentIntentPaymentMethodOptionsSwish {
+    /// The order ID displayed in the Swish app after the payment is authorized.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub reference: Option<String>,
+
+    /// Indicates that you intend to make future payments with this PaymentIntent's payment method.
+    ///
+    /// Providing this parameter will [attach the payment method](https://stripe.com/docs/payments/save-during-payment) to the PaymentIntent's Customer, if present, after the PaymentIntent is confirmed and any required actions from the user are complete.
+    ///
+    /// If no Customer was provided, the payment method can still be [attached](https://stripe.com/docs/api/payment_methods/attach) to a Customer after the transaction completes.  When processing card payments, Stripe also uses `setup_future_usage` to dynamically optimize your payment flow and comply with regional legislation and network rules, such as [SCA](https://stripe.com/docs/strong-customer-authentication).  If `setup_future_usage` is already set and you are performing a request using a publishable key, you may only update the value from `on_session` to `off_session`.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub setup_future_usage: Option<CreatePaymentIntentPaymentMethodOptionsSwishSetupFutureUsage>,
+}
+
+#[derive(Clone, Debug, Default, Deserialize, Serialize)]
 pub struct CreatePaymentIntentPaymentMethodOptionsUsBankAccount {
     /// Additional fields for Financial Connections Session creation.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub financial_connections:
         Option<CreatePaymentIntentPaymentMethodOptionsUsBankAccountFinancialConnections>,
+
+    /// Additional fields for Mandate creation.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub mandate_options: Option<CreatePaymentIntentPaymentMethodOptionsUsBankAccountMandateOptions>,
 
     /// Additional fields for network related functions.
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -3472,7 +3564,7 @@ pub struct CreatePaymentIntentPaymentMethodOptionsUsBankAccount {
     pub setup_future_usage:
         Option<CreatePaymentIntentPaymentMethodOptionsUsBankAccountSetupFutureUsage>,
 
-    /// Verification method for the intent.
+    /// Bank account verification method.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub verification_method:
         Option<CreatePaymentIntentPaymentMethodOptionsUsBankAccountVerificationMethod>,
@@ -3708,6 +3800,9 @@ pub struct UpdatePaymentIntentPaymentMethodDataSofort {
 }
 
 #[derive(Clone, Debug, Default, Deserialize, Serialize)]
+pub struct UpdatePaymentIntentPaymentMethodDataSwish {}
+
+#[derive(Clone, Debug, Default, Deserialize, Serialize)]
 pub struct UpdatePaymentIntentPaymentMethodDataUsBankAccount {
     /// Account holder type: individual or company.
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -3754,7 +3849,7 @@ pub struct UpdatePaymentIntentPaymentMethodOptionsAcssDebit {
     pub setup_future_usage:
         Option<UpdatePaymentIntentPaymentMethodOptionsAcssDebitSetupFutureUsage>,
 
-    /// Verification method for the intent.
+    /// Bank account verification method.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub verification_method:
         Option<UpdatePaymentIntentPaymentMethodOptionsAcssDebitVerificationMethod>,
@@ -3934,7 +4029,7 @@ pub struct UpdatePaymentIntentPaymentMethodOptionsCard {
     pub request_extended_authorization:
         Option<UpdatePaymentIntentPaymentMethodOptionsCardRequestExtendedAuthorization>,
 
-    /// Request ability to [increment](https://stripe.com/docs/payments/incremental-authorization) for this PaymentIntent.
+    /// Request ability to [increment the authorization](https://stripe.com/docs/payments/incremental-authorization) for this PaymentIntent.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub request_incremental_authorization:
         Option<UpdatePaymentIntentPaymentMethodOptionsCardRequestIncrementalAuthorization>,
@@ -3951,8 +4046,7 @@ pub struct UpdatePaymentIntentPaymentMethodOptionsCard {
     /// We strongly recommend that you rely on our SCA Engine to automatically prompt your customers for authentication based on risk level and [other requirements](https://stripe.com/docs/strong-customer-authentication).
     ///
     /// However, if you wish to request 3D Secure based on logic from your own fraud engine, provide this option.
-    /// Permitted values include: `automatic` or `any`.
-    /// If not provided, defaults to `automatic`.
+    /// If not provided, this value defaults to `automatic`.
     /// Read our guide on [manually requesting 3D Secure](https://stripe.com/docs/payments/3d-secure#manual-three-ds) for more information on how this configuration interacts with Radar and our SCA Engine.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub request_three_d_secure:
@@ -4332,11 +4426,30 @@ pub struct UpdatePaymentIntentPaymentMethodOptionsSofort {
 }
 
 #[derive(Clone, Debug, Default, Deserialize, Serialize)]
+pub struct UpdatePaymentIntentPaymentMethodOptionsSwish {
+    /// The order ID displayed in the Swish app after the payment is authorized.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub reference: Option<String>,
+
+    /// Indicates that you intend to make future payments with this PaymentIntent's payment method.
+    ///
+    /// Providing this parameter will [attach the payment method](https://stripe.com/docs/payments/save-during-payment) to the PaymentIntent's Customer, if present, after the PaymentIntent is confirmed and any required actions from the user are complete.
+    ///
+    /// If no Customer was provided, the payment method can still be [attached](https://stripe.com/docs/api/payment_methods/attach) to a Customer after the transaction completes.  When processing card payments, Stripe also uses `setup_future_usage` to dynamically optimize your payment flow and comply with regional legislation and network rules, such as [SCA](https://stripe.com/docs/strong-customer-authentication).  If `setup_future_usage` is already set and you are performing a request using a publishable key, you may only update the value from `on_session` to `off_session`.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub setup_future_usage: Option<UpdatePaymentIntentPaymentMethodOptionsSwishSetupFutureUsage>,
+}
+
+#[derive(Clone, Debug, Default, Deserialize, Serialize)]
 pub struct UpdatePaymentIntentPaymentMethodOptionsUsBankAccount {
     /// Additional fields for Financial Connections Session creation.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub financial_connections:
         Option<UpdatePaymentIntentPaymentMethodOptionsUsBankAccountFinancialConnections>,
+
+    /// Additional fields for Mandate creation.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub mandate_options: Option<UpdatePaymentIntentPaymentMethodOptionsUsBankAccountMandateOptions>,
 
     /// Additional fields for network related functions.
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -4356,7 +4469,7 @@ pub struct UpdatePaymentIntentPaymentMethodOptionsUsBankAccount {
     pub setup_future_usage:
         Option<UpdatePaymentIntentPaymentMethodOptionsUsBankAccountSetupFutureUsage>,
 
-    /// Verification method for the intent.
+    /// Bank account verification method.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub verification_method:
         Option<UpdatePaymentIntentPaymentMethodOptionsUsBankAccountVerificationMethod>,
@@ -4660,6 +4773,14 @@ pub struct CreatePaymentIntentPaymentMethodOptionsUsBankAccountFinancialConnecti
 }
 
 #[derive(Clone, Debug, Default, Deserialize, Serialize)]
+pub struct CreatePaymentIntentPaymentMethodOptionsUsBankAccountMandateOptions {
+    /// The method used to collect offline mandate customer acceptance.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub collection_method:
+        Option<CreatePaymentIntentPaymentMethodOptionsUsBankAccountMandateOptionsCollectionMethod>,
+}
+
+#[derive(Clone, Debug, Default, Deserialize, Serialize)]
 pub struct CreatePaymentIntentPaymentMethodOptionsUsBankAccountNetworks {
     /// Triggers validations to run across the selected networks.
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -4891,6 +5012,14 @@ pub struct UpdatePaymentIntentPaymentMethodOptionsUsBankAccountFinancialConnecti
     /// Upon completing OAuth login in the native browser, the user will be redirected to this URL to return to your app.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub return_url: Option<String>,
+}
+
+#[derive(Clone, Debug, Default, Deserialize, Serialize)]
+pub struct UpdatePaymentIntentPaymentMethodOptionsUsBankAccountMandateOptions {
+    /// The method used to collect offline mandate customer acceptance.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub collection_method:
+        Option<UpdatePaymentIntentPaymentMethodOptionsUsBankAccountMandateOptionsCollectionMethod>,
 }
 
 #[derive(Clone, Debug, Default, Deserialize, Serialize)]
@@ -5309,6 +5438,7 @@ pub enum CreatePaymentIntentPaymentMethodDataIdealBank {
     Knab,
     Moneyou,
     N26,
+    Nn,
     Rabobank,
     Regiobank,
     Revolut,
@@ -5329,6 +5459,7 @@ impl CreatePaymentIntentPaymentMethodDataIdealBank {
             CreatePaymentIntentPaymentMethodDataIdealBank::Knab => "knab",
             CreatePaymentIntentPaymentMethodDataIdealBank::Moneyou => "moneyou",
             CreatePaymentIntentPaymentMethodDataIdealBank::N26 => "n26",
+            CreatePaymentIntentPaymentMethodDataIdealBank::Nn => "nn",
             CreatePaymentIntentPaymentMethodDataIdealBank::Rabobank => "rabobank",
             CreatePaymentIntentPaymentMethodDataIdealBank::Regiobank => "regiobank",
             CreatePaymentIntentPaymentMethodDataIdealBank::Revolut => "revolut",
@@ -5523,6 +5654,7 @@ pub enum CreatePaymentIntentPaymentMethodDataType {
     RevolutPay,
     SepaDebit,
     Sofort,
+    Swish,
     UsBankAccount,
     WechatPay,
     Zip,
@@ -5559,6 +5691,7 @@ impl CreatePaymentIntentPaymentMethodDataType {
             CreatePaymentIntentPaymentMethodDataType::RevolutPay => "revolut_pay",
             CreatePaymentIntentPaymentMethodDataType::SepaDebit => "sepa_debit",
             CreatePaymentIntentPaymentMethodDataType::Sofort => "sofort",
+            CreatePaymentIntentPaymentMethodDataType::Swish => "swish",
             CreatePaymentIntentPaymentMethodDataType::UsBankAccount => "us_bank_account",
             CreatePaymentIntentPaymentMethodDataType::WechatPay => "wechat_pay",
             CreatePaymentIntentPaymentMethodDataType::Zip => "zip",
@@ -6597,6 +6730,7 @@ impl std::default::Default for CreatePaymentIntentPaymentMethodOptionsCardReques
 pub enum CreatePaymentIntentPaymentMethodOptionsCardRequestThreeDSecure {
     Any,
     Automatic,
+    Challenge,
 }
 
 impl CreatePaymentIntentPaymentMethodOptionsCardRequestThreeDSecure {
@@ -6605,6 +6739,9 @@ impl CreatePaymentIntentPaymentMethodOptionsCardRequestThreeDSecure {
             CreatePaymentIntentPaymentMethodOptionsCardRequestThreeDSecure::Any => "any",
             CreatePaymentIntentPaymentMethodOptionsCardRequestThreeDSecure::Automatic => {
                 "automatic"
+            }
+            CreatePaymentIntentPaymentMethodOptionsCardRequestThreeDSecure::Challenge => {
+                "challenge"
             }
         }
     }
@@ -8104,6 +8241,38 @@ impl std::default::Default for CreatePaymentIntentPaymentMethodOptionsSofortSetu
     }
 }
 
+/// An enum representing the possible values of an `CreatePaymentIntentPaymentMethodOptionsSwish`'s `setup_future_usage` field.
+#[derive(Copy, Clone, Debug, Deserialize, Serialize, Eq, PartialEq)]
+#[serde(rename_all = "snake_case")]
+pub enum CreatePaymentIntentPaymentMethodOptionsSwishSetupFutureUsage {
+    None,
+}
+
+impl CreatePaymentIntentPaymentMethodOptionsSwishSetupFutureUsage {
+    pub fn as_str(self) -> &'static str {
+        match self {
+            CreatePaymentIntentPaymentMethodOptionsSwishSetupFutureUsage::None => "none",
+        }
+    }
+}
+
+impl AsRef<str> for CreatePaymentIntentPaymentMethodOptionsSwishSetupFutureUsage {
+    fn as_ref(&self) -> &str {
+        self.as_str()
+    }
+}
+
+impl std::fmt::Display for CreatePaymentIntentPaymentMethodOptionsSwishSetupFutureUsage {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        self.as_str().fmt(f)
+    }
+}
+impl std::default::Default for CreatePaymentIntentPaymentMethodOptionsSwishSetupFutureUsage {
+    fn default() -> Self {
+        Self::None
+    }
+}
+
 /// An enum representing the possible values of an `CreatePaymentIntentPaymentMethodOptionsUsBankAccountFinancialConnections`'s `permissions` field.
 #[derive(Copy, Clone, Debug, Deserialize, Serialize, Eq, PartialEq)]
 #[serde(rename_all = "snake_case")]
@@ -8153,12 +8322,14 @@ impl std::default::Default
 #[serde(rename_all = "snake_case")]
 pub enum CreatePaymentIntentPaymentMethodOptionsUsBankAccountFinancialConnectionsPrefetch {
     Balances,
+    Transactions,
 }
 
 impl CreatePaymentIntentPaymentMethodOptionsUsBankAccountFinancialConnectionsPrefetch {
     pub fn as_str(self) -> &'static str {
         match self {
             CreatePaymentIntentPaymentMethodOptionsUsBankAccountFinancialConnectionsPrefetch::Balances => "balances",
+            CreatePaymentIntentPaymentMethodOptionsUsBankAccountFinancialConnectionsPrefetch::Transactions => "transactions",
         }
     }
 }
@@ -8183,6 +8354,44 @@ impl std::default::Default
 {
     fn default() -> Self {
         Self::Balances
+    }
+}
+
+/// An enum representing the possible values of an `CreatePaymentIntentPaymentMethodOptionsUsBankAccountMandateOptions`'s `collection_method` field.
+#[derive(Copy, Clone, Debug, Deserialize, Serialize, Eq, PartialEq)]
+#[serde(rename_all = "snake_case")]
+pub enum CreatePaymentIntentPaymentMethodOptionsUsBankAccountMandateOptionsCollectionMethod {
+    Paper,
+}
+
+impl CreatePaymentIntentPaymentMethodOptionsUsBankAccountMandateOptionsCollectionMethod {
+    pub fn as_str(self) -> &'static str {
+        match self {
+            CreatePaymentIntentPaymentMethodOptionsUsBankAccountMandateOptionsCollectionMethod::Paper => "paper",
+        }
+    }
+}
+
+impl AsRef<str>
+    for CreatePaymentIntentPaymentMethodOptionsUsBankAccountMandateOptionsCollectionMethod
+{
+    fn as_ref(&self) -> &str {
+        self.as_str()
+    }
+}
+
+impl std::fmt::Display
+    for CreatePaymentIntentPaymentMethodOptionsUsBankAccountMandateOptionsCollectionMethod
+{
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        self.as_str().fmt(f)
+    }
+}
+impl std::default::Default
+    for CreatePaymentIntentPaymentMethodOptionsUsBankAccountMandateOptionsCollectionMethod
+{
+    fn default() -> Self {
+        Self::Paper
     }
 }
 
@@ -9109,7 +9318,6 @@ pub enum PaymentIntentPaymentMethodOptionsCardRequestThreeDSecure {
     Any,
     Automatic,
     Challenge,
-    ChallengeOnly,
 }
 
 impl PaymentIntentPaymentMethodOptionsCardRequestThreeDSecure {
@@ -9118,9 +9326,6 @@ impl PaymentIntentPaymentMethodOptionsCardRequestThreeDSecure {
             PaymentIntentPaymentMethodOptionsCardRequestThreeDSecure::Any => "any",
             PaymentIntentPaymentMethodOptionsCardRequestThreeDSecure::Automatic => "automatic",
             PaymentIntentPaymentMethodOptionsCardRequestThreeDSecure::Challenge => "challenge",
-            PaymentIntentPaymentMethodOptionsCardRequestThreeDSecure::ChallengeOnly => {
-                "challenge_only"
-            }
         }
     }
 }
@@ -9391,6 +9596,38 @@ impl std::fmt::Display for PaymentIntentPaymentMethodOptionsSepaDebitSetupFuture
     }
 }
 impl std::default::Default for PaymentIntentPaymentMethodOptionsSepaDebitSetupFutureUsage {
+    fn default() -> Self {
+        Self::None
+    }
+}
+
+/// An enum representing the possible values of an `PaymentIntentPaymentMethodOptionsSwish`'s `setup_future_usage` field.
+#[derive(Copy, Clone, Debug, Deserialize, Serialize, Eq, PartialEq)]
+#[serde(rename_all = "snake_case")]
+pub enum PaymentIntentPaymentMethodOptionsSwishSetupFutureUsage {
+    None,
+}
+
+impl PaymentIntentPaymentMethodOptionsSwishSetupFutureUsage {
+    pub fn as_str(self) -> &'static str {
+        match self {
+            PaymentIntentPaymentMethodOptionsSwishSetupFutureUsage::None => "none",
+        }
+    }
+}
+
+impl AsRef<str> for PaymentIntentPaymentMethodOptionsSwishSetupFutureUsage {
+    fn as_ref(&self) -> &str {
+        self.as_str()
+    }
+}
+
+impl std::fmt::Display for PaymentIntentPaymentMethodOptionsSwishSetupFutureUsage {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        self.as_str().fmt(f)
+    }
+}
+impl std::default::Default for PaymentIntentPaymentMethodOptionsSwishSetupFutureUsage {
     fn default() -> Self {
         Self::None
     }
@@ -11168,6 +11405,7 @@ pub enum UpdatePaymentIntentPaymentMethodDataIdealBank {
     Knab,
     Moneyou,
     N26,
+    Nn,
     Rabobank,
     Regiobank,
     Revolut,
@@ -11188,6 +11426,7 @@ impl UpdatePaymentIntentPaymentMethodDataIdealBank {
             UpdatePaymentIntentPaymentMethodDataIdealBank::Knab => "knab",
             UpdatePaymentIntentPaymentMethodDataIdealBank::Moneyou => "moneyou",
             UpdatePaymentIntentPaymentMethodDataIdealBank::N26 => "n26",
+            UpdatePaymentIntentPaymentMethodDataIdealBank::Nn => "nn",
             UpdatePaymentIntentPaymentMethodDataIdealBank::Rabobank => "rabobank",
             UpdatePaymentIntentPaymentMethodDataIdealBank::Regiobank => "regiobank",
             UpdatePaymentIntentPaymentMethodDataIdealBank::Revolut => "revolut",
@@ -11382,6 +11621,7 @@ pub enum UpdatePaymentIntentPaymentMethodDataType {
     RevolutPay,
     SepaDebit,
     Sofort,
+    Swish,
     UsBankAccount,
     WechatPay,
     Zip,
@@ -11418,6 +11658,7 @@ impl UpdatePaymentIntentPaymentMethodDataType {
             UpdatePaymentIntentPaymentMethodDataType::RevolutPay => "revolut_pay",
             UpdatePaymentIntentPaymentMethodDataType::SepaDebit => "sepa_debit",
             UpdatePaymentIntentPaymentMethodDataType::Sofort => "sofort",
+            UpdatePaymentIntentPaymentMethodDataType::Swish => "swish",
             UpdatePaymentIntentPaymentMethodDataType::UsBankAccount => "us_bank_account",
             UpdatePaymentIntentPaymentMethodDataType::WechatPay => "wechat_pay",
             UpdatePaymentIntentPaymentMethodDataType::Zip => "zip",
@@ -12456,6 +12697,7 @@ impl std::default::Default for UpdatePaymentIntentPaymentMethodOptionsCardReques
 pub enum UpdatePaymentIntentPaymentMethodOptionsCardRequestThreeDSecure {
     Any,
     Automatic,
+    Challenge,
 }
 
 impl UpdatePaymentIntentPaymentMethodOptionsCardRequestThreeDSecure {
@@ -12464,6 +12706,9 @@ impl UpdatePaymentIntentPaymentMethodOptionsCardRequestThreeDSecure {
             UpdatePaymentIntentPaymentMethodOptionsCardRequestThreeDSecure::Any => "any",
             UpdatePaymentIntentPaymentMethodOptionsCardRequestThreeDSecure::Automatic => {
                 "automatic"
+            }
+            UpdatePaymentIntentPaymentMethodOptionsCardRequestThreeDSecure::Challenge => {
+                "challenge"
             }
         }
     }
@@ -13963,6 +14208,38 @@ impl std::default::Default for UpdatePaymentIntentPaymentMethodOptionsSofortSetu
     }
 }
 
+/// An enum representing the possible values of an `UpdatePaymentIntentPaymentMethodOptionsSwish`'s `setup_future_usage` field.
+#[derive(Copy, Clone, Debug, Deserialize, Serialize, Eq, PartialEq)]
+#[serde(rename_all = "snake_case")]
+pub enum UpdatePaymentIntentPaymentMethodOptionsSwishSetupFutureUsage {
+    None,
+}
+
+impl UpdatePaymentIntentPaymentMethodOptionsSwishSetupFutureUsage {
+    pub fn as_str(self) -> &'static str {
+        match self {
+            UpdatePaymentIntentPaymentMethodOptionsSwishSetupFutureUsage::None => "none",
+        }
+    }
+}
+
+impl AsRef<str> for UpdatePaymentIntentPaymentMethodOptionsSwishSetupFutureUsage {
+    fn as_ref(&self) -> &str {
+        self.as_str()
+    }
+}
+
+impl std::fmt::Display for UpdatePaymentIntentPaymentMethodOptionsSwishSetupFutureUsage {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        self.as_str().fmt(f)
+    }
+}
+impl std::default::Default for UpdatePaymentIntentPaymentMethodOptionsSwishSetupFutureUsage {
+    fn default() -> Self {
+        Self::None
+    }
+}
+
 /// An enum representing the possible values of an `UpdatePaymentIntentPaymentMethodOptionsUsBankAccountFinancialConnections`'s `permissions` field.
 #[derive(Copy, Clone, Debug, Deserialize, Serialize, Eq, PartialEq)]
 #[serde(rename_all = "snake_case")]
@@ -14012,12 +14289,14 @@ impl std::default::Default
 #[serde(rename_all = "snake_case")]
 pub enum UpdatePaymentIntentPaymentMethodOptionsUsBankAccountFinancialConnectionsPrefetch {
     Balances,
+    Transactions,
 }
 
 impl UpdatePaymentIntentPaymentMethodOptionsUsBankAccountFinancialConnectionsPrefetch {
     pub fn as_str(self) -> &'static str {
         match self {
             UpdatePaymentIntentPaymentMethodOptionsUsBankAccountFinancialConnectionsPrefetch::Balances => "balances",
+            UpdatePaymentIntentPaymentMethodOptionsUsBankAccountFinancialConnectionsPrefetch::Transactions => "transactions",
         }
     }
 }
@@ -14042,6 +14321,44 @@ impl std::default::Default
 {
     fn default() -> Self {
         Self::Balances
+    }
+}
+
+/// An enum representing the possible values of an `UpdatePaymentIntentPaymentMethodOptionsUsBankAccountMandateOptions`'s `collection_method` field.
+#[derive(Copy, Clone, Debug, Deserialize, Serialize, Eq, PartialEq)]
+#[serde(rename_all = "snake_case")]
+pub enum UpdatePaymentIntentPaymentMethodOptionsUsBankAccountMandateOptionsCollectionMethod {
+    Paper,
+}
+
+impl UpdatePaymentIntentPaymentMethodOptionsUsBankAccountMandateOptionsCollectionMethod {
+    pub fn as_str(self) -> &'static str {
+        match self {
+            UpdatePaymentIntentPaymentMethodOptionsUsBankAccountMandateOptionsCollectionMethod::Paper => "paper",
+        }
+    }
+}
+
+impl AsRef<str>
+    for UpdatePaymentIntentPaymentMethodOptionsUsBankAccountMandateOptionsCollectionMethod
+{
+    fn as_ref(&self) -> &str {
+        self.as_str()
+    }
+}
+
+impl std::fmt::Display
+    for UpdatePaymentIntentPaymentMethodOptionsUsBankAccountMandateOptionsCollectionMethod
+{
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        self.as_str().fmt(f)
+    }
+}
+impl std::default::Default
+    for UpdatePaymentIntentPaymentMethodOptionsUsBankAccountMandateOptionsCollectionMethod
+{
+    fn default() -> Self {
+        Self::Paper
     }
 }
 

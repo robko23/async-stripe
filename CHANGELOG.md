@@ -1,3 +1,84 @@
+# [0.33.0](https://github.com/arlyon/async-stripe/compare/v0.32.0...v0.33.0) (2024-02-02)
+
+
+### Bug Fixes
+
+* support pdp_ as an id prefix for dispute objects ([be506d6](https://github.com/arlyon/async-stripe/commit/be506d6fc6fa41dd6085d3887abbadbef069432c))
+
+
+### Features
+
+* generate latest changes from OpenApi spec ([29a457d](https://github.com/arlyon/async-stripe/commit/29a457d280f25ebd7d95e80ad5a4af4172e05682))
+
+# [0.32.0](https://github.com/arlyon/async-stripe/compare/v0.31.2...v0.32.0) (2024-01-27)
+
+
+### Features
+
+* generate latest changes from OpenApi spec ([19ac377](https://github.com/arlyon/async-stripe/commit/19ac377c82c8b52a44092a3f93174917983d166f))
+
+## [0.31.2](https://github.com/arlyon/async-stripe/compare/v0.31.1...v0.31.2) (2024-01-24)
+
+
+### Bug Fixes
+
+* **currency:** add BYN and MMK to currency list ([03cddce](https://github.com/arlyon/async-stripe/commit/03cddce1a9c20c25b531aab47e6e47254b6bef60))
+
+## [0.31.1](https://github.com/arlyon/async-stripe/compare/v0.31.0...v0.31.1) (2024-01-24)
+
+
+### Bug Fixes
+
+* **pagination:** prevent infinite loop caused by clone ([bc20bd4](https://github.com/arlyon/async-stripe/commit/bc20bd46f67ffb384d67d0605cb5126e1f3d6333))
+
+# [0.31.0](https://github.com/arlyon/async-stripe/compare/v0.30.1...v0.31.0) (2024-01-24)
+
+
+### Features
+
+* generate latest changes from OpenApi spec ([9b3a844](https://github.com/arlyon/async-stripe/commit/9b3a844a94c090fd66ce7d223ccd8ddcd93a5c45))
+
+## [0.30.1](https://github.com/arlyon/async-stripe/compare/v0.30.0...v0.30.1) (2024-01-24)
+
+
+### Bug Fixes
+
+* **codegen:** generate terminal resource objects ([bf7e117](https://github.com/arlyon/async-stripe/commit/bf7e1178d61d50a83e21199d0c67bc99b5d04f60))
+
+# [0.30.0](https://github.com/arlyon/async-stripe/compare/v0.29.0...v0.30.0) (2024-01-24)
+
+
+### Bug Fixes
+
+* avoid generating nested currency options ([f020df4](https://github.com/arlyon/async-stripe/commit/f020df4feb4fee89366b5bc15cc596caec697f78))
+* typo in checkout.rs ([c55541b](https://github.com/arlyon/async-stripe/commit/c55541b1ee96d91eb29ef900f7292f1337a7c3c3))
+
+
+### Features
+
+* generate latest changes from OpenApi spec ([d0cbc71](https://github.com/arlyon/async-stripe/commit/d0cbc718a980aedee4b191a401e76a958c3e4bb5))
+
+# [0.29.0](https://github.com/arlyon/async-stripe/compare/v0.28.1...v0.29.0) (2024-01-10)
+
+
+### Features
+
+* generate latest changes from OpenApi spec ([32e802e](https://github.com/arlyon/async-stripe/commit/32e802ef4d36f8ab495e7c2b6abba29450eb999f))
+
+## [0.28.1](https://github.com/arlyon/async-stripe/compare/v0.28.0...v0.28.1) (2024-01-10)
+
+
+### Bug Fixes
+
+* add plan prefix to PriceId ([6655058](https://github.com/arlyon/async-stripe/commit/6655058a476adc6551643a947308f13e8ba320d3))
+
+# [0.28.0](https://github.com/arlyon/async-stripe/compare/v0.27.0...v0.28.0) (2023-12-08)
+
+
+### Features
+
+* generate latest changes from OpenApi spec ([4c25649](https://github.com/arlyon/async-stripe/commit/4c256490d60e8d1e158f8f6ed7300a766c1f449d))
+
 # [0.27.0](https://github.com/arlyon/async-stripe/compare/v0.26.0...v0.27.0) (2023-12-01)
 
 

@@ -156,6 +156,9 @@ pub struct MandateBacsDebit {
     /// The unique reference identifying the mandate on the Bacs network.
     pub reference: String,
 
+    /// When the mandate is revoked on the Bacs network this field displays the reason for the revocation.
+    pub revocation_reason: Option<MandateBacsDebitRevocationReason>,
+
     /// The URL that will contain the mandate that the customer has signed.
     pub url: String,
 }
@@ -200,7 +203,11 @@ pub struct MandateSingleUse {
 }
 
 #[derive(Clone, Debug, Default, Deserialize, Serialize)]
-pub struct MandateUsBankAccount {}
+pub struct MandateUsBankAccount {
+    /// Mandate collection method.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub collection_method: Option<MandateUsBankAccountCollectionMethod>,
+}
 
 #[derive(Clone, Debug, Default, Deserialize, Serialize)]
 pub struct OfflineAcceptance {}
@@ -390,6 +397,46 @@ impl std::default::Default for MandateBacsDebitNetworkStatus {
     }
 }
 
+/// An enum representing the possible values of an `MandateBacsDebit`'s `revocation_reason` field.
+#[derive(Copy, Clone, Debug, Deserialize, Serialize, Eq, PartialEq)]
+#[serde(rename_all = "snake_case")]
+pub enum MandateBacsDebitRevocationReason {
+    AccountClosed,
+    BankAccountRestricted,
+    BankOwnershipChanged,
+    CouldNotProcess,
+    DebitNotAuthorized,
+}
+
+impl MandateBacsDebitRevocationReason {
+    pub fn as_str(self) -> &'static str {
+        match self {
+            MandateBacsDebitRevocationReason::AccountClosed => "account_closed",
+            MandateBacsDebitRevocationReason::BankAccountRestricted => "bank_account_restricted",
+            MandateBacsDebitRevocationReason::BankOwnershipChanged => "bank_ownership_changed",
+            MandateBacsDebitRevocationReason::CouldNotProcess => "could_not_process",
+            MandateBacsDebitRevocationReason::DebitNotAuthorized => "debit_not_authorized",
+        }
+    }
+}
+
+impl AsRef<str> for MandateBacsDebitRevocationReason {
+    fn as_ref(&self) -> &str {
+        self.as_str()
+    }
+}
+
+impl std::fmt::Display for MandateBacsDebitRevocationReason {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        self.as_str().fmt(f)
+    }
+}
+impl std::default::Default for MandateBacsDebitRevocationReason {
+    fn default() -> Self {
+        Self::AccountClosed
+    }
+}
+
 /// An enum representing the possible values of an `Mandate`'s `status` field.
 #[derive(Copy, Clone, Debug, Deserialize, Serialize, Eq, PartialEq)]
 #[serde(rename_all = "snake_case")]
@@ -457,5 +504,37 @@ impl std::fmt::Display for MandateType {
 impl std::default::Default for MandateType {
     fn default() -> Self {
         Self::MultiUse
+    }
+}
+
+/// An enum representing the possible values of an `MandateUsBankAccount`'s `collection_method` field.
+#[derive(Copy, Clone, Debug, Deserialize, Serialize, Eq, PartialEq)]
+#[serde(rename_all = "snake_case")]
+pub enum MandateUsBankAccountCollectionMethod {
+    Paper,
+}
+
+impl MandateUsBankAccountCollectionMethod {
+    pub fn as_str(self) -> &'static str {
+        match self {
+            MandateUsBankAccountCollectionMethod::Paper => "paper",
+        }
+    }
+}
+
+impl AsRef<str> for MandateUsBankAccountCollectionMethod {
+    fn as_ref(&self) -> &str {
+        self.as_str()
+    }
+}
+
+impl std::fmt::Display for MandateUsBankAccountCollectionMethod {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        self.as_str().fmt(f)
+    }
+}
+impl std::default::Default for MandateUsBankAccountCollectionMethod {
+    fn default() -> Self {
+        Self::Paper
     }
 }

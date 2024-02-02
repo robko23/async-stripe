@@ -216,10 +216,10 @@ impl Charge {
         client.get_query("/charges", &params)
     }
 
-    /// Use the [Payment Intents API](https://stripe.com/docs/api/payment_intents) to initiate a new payment instead
-    /// of using this method.
+    /// This method is no longer recommended—use the [Payment Intents API](https://stripe.com/docs/api/payment_intents)
+    /// to initiate a new payment instead.
     ///
-    /// Confirmation of the PaymentIntent creates the `Charge` object used to request payment, so this method is limited to legacy integrations.
+    /// Confirmation of the PaymentIntent creates the `Charge` object used to request payment.
     pub fn create(client: &Client, params: CreateCharge<'_>) -> Response<Charge> {
         client.post_form("/charges", &params)
     }
@@ -465,6 +465,9 @@ pub struct PaymentMethodDetails {
 
     #[serde(skip_serializing_if = "Option::is_none")]
     pub stripe_account: Option<PaymentMethodDetailsStripeAccount>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub swish: Option<PaymentMethodDetailsSwish>,
 
     /// The type of transaction-specific details of the payment method used in the payment, one of `ach_credit_transfer`, `ach_debit`, `acss_debit`, `alipay`, `au_becs_debit`, `bancontact`, `card`, `card_present`, `eps`, `giropay`, `ideal`, `klarna`, `multibanco`, `p24`, `sepa_debit`, `sofort`, `stripe_account`, or `wechat`.
     /// An additional hash is included on `payment_method_details` with a name matching this value.
@@ -1116,7 +1119,7 @@ pub struct PaymentMethodDetailsGrabpay {
 pub struct PaymentMethodDetailsIdeal {
     /// The customer's bank.
     ///
-    /// Can be one of `abn_amro`, `asn_bank`, `bunq`, `handelsbanken`, `ing`, `knab`, `moneyou`, `n26`, `rabobank`, `regiobank`, `revolut`, `sns_bank`, `triodos_bank`, `van_lanschot`, or `yoursafe`.
+    /// Can be one of `abn_amro`, `asn_bank`, `bunq`, `handelsbanken`, `ing`, `knab`, `moneyou`, `n26`, `nn`, `rabobank`, `regiobank`, `revolut`, `sns_bank`, `triodos_bank`, `van_lanschot`, or `yoursafe`.
     pub bank: Option<PaymentMethodDetailsIdealBank>,
 
     /// The Bank Identifier Code of the customer's bank.
@@ -1440,6 +1443,20 @@ pub struct PaymentMethodDetailsSofort {
 
 #[derive(Clone, Debug, Default, Deserialize, Serialize)]
 pub struct PaymentMethodDetailsStripeAccount {}
+
+#[derive(Clone, Debug, Default, Deserialize, Serialize)]
+pub struct PaymentMethodDetailsSwish {
+    /// Uniquely identifies the payer's Swish account.
+    ///
+    /// You can use this attribute to check whether two Swish transactions were paid for by the same payer.
+    pub fingerprint: Option<String>,
+
+    /// Payer bank reference number for the payment.
+    pub payment_reference: Option<String>,
+
+    /// The last four digits of the Swish account phone number.
+    pub verified_phone_last4: Option<String>,
+}
 
 #[derive(Clone, Debug, Default, Deserialize, Serialize)]
 pub struct PaymentMethodDetailsUsBankAccount {
@@ -2478,6 +2495,7 @@ pub enum PaymentMethodDetailsIdealBank {
     Knab,
     Moneyou,
     N26,
+    Nn,
     Rabobank,
     Regiobank,
     Revolut,
@@ -2498,6 +2516,7 @@ impl PaymentMethodDetailsIdealBank {
             PaymentMethodDetailsIdealBank::Knab => "knab",
             PaymentMethodDetailsIdealBank::Moneyou => "moneyou",
             PaymentMethodDetailsIdealBank::N26 => "n26",
+            PaymentMethodDetailsIdealBank::Nn => "nn",
             PaymentMethodDetailsIdealBank::Rabobank => "rabobank",
             PaymentMethodDetailsIdealBank::Regiobank => "regiobank",
             PaymentMethodDetailsIdealBank::Revolut => "revolut",
@@ -2548,6 +2567,8 @@ pub enum PaymentMethodDetailsIdealBic {
     Knabnl2h,
     #[serde(rename = "MOYONL21")]
     Moyonl21,
+    #[serde(rename = "NNBANL2G")]
+    Nnbanl2g,
     #[serde(rename = "NTSBDEB1")]
     Ntsbdeb1,
     #[serde(rename = "RABONL2U")]
@@ -2576,6 +2597,7 @@ impl PaymentMethodDetailsIdealBic {
             PaymentMethodDetailsIdealBic::Ingbnl2a => "INGBNL2A",
             PaymentMethodDetailsIdealBic::Knabnl2h => "KNABNL2H",
             PaymentMethodDetailsIdealBic::Moyonl21 => "MOYONL21",
+            PaymentMethodDetailsIdealBic::Nnbanl2g => "NNBANL2G",
             PaymentMethodDetailsIdealBic::Ntsbdeb1 => "NTSBDEB1",
             PaymentMethodDetailsIdealBic::Rabonl2u => "RABONL2U",
             PaymentMethodDetailsIdealBic::Rbrbnl21 => "RBRBNL21",

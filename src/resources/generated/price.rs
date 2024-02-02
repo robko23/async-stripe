@@ -222,7 +222,6 @@ pub struct PriceTier {
 pub struct Recurring {
     /// Specifies a usage aggregation strategy for prices of `usage_type=metered`.
     ///
-    /// Allowed values are `sum` for summing up all usage during a period, `last_during_period` for using the last usage record reported within a period, `last_ever` for using the last usage record ever (across period bounds) or `max` which uses the usage record with the maximum reported usage during a period.
     /// Defaults to `sum`.
     pub aggregate_usage: Option<RecurringAggregateUsage>,
 
@@ -488,7 +487,7 @@ pub struct UpdatePrice<'a> {
     ///
     /// Each key must be a three-letter [ISO currency code](https://www.iso.org/iso-4217-currency-codes.html) and a [supported currency](https://stripe.com/docs/currencies).
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub currency_options: Option<CurrencyMap<Option<CurrencyMap<UpdatePriceCurrencyOptions>>>>,
+    pub currency_options: Option<CurrencyMap<UpdatePriceCurrencyOptions>>,
 
     /// Specifies which fields in the response should be expanded.
     #[serde(skip_serializing_if = "Expand::is_empty")]
@@ -641,7 +640,6 @@ pub struct CreatePriceProductData {
 pub struct CreatePriceRecurring {
     /// Specifies a usage aggregation strategy for prices of `usage_type=metered`.
     ///
-    /// Allowed values are `sum` for summing up all usage during a period, `last_during_period` for using the last usage record reported within a period, `last_ever` for using the last usage record ever (across period bounds) or `max` which uses the usage record with the maximum reported usage during a period.
     /// Defaults to `sum`.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub aggregate_usage: Option<CreatePriceRecurringAggregateUsage>,
@@ -654,7 +652,7 @@ pub struct CreatePriceRecurring {
     /// The number of intervals between subscription billings.
     ///
     /// For example, `interval=month` and `interval_count=3` bills every 3 months.
-    /// Maximum of one year interval allowed (1 year, 12 months, or 52 weeks).
+    /// Maximum of three years interval allowed (3 years, 36 months, or 156 weeks).
     #[serde(skip_serializing_if = "Option::is_none")]
     pub interval_count: Option<u64>,
 
