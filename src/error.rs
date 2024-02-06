@@ -4,6 +4,7 @@ use serde::{Deserialize, Serialize};
 use thiserror::Error;
 
 use crate::params::to_snakecase;
+use crate::PaymentIntent;
 
 /// An error encountered when communicating with the Stripe API.
 #[derive(Debug, Error)]
@@ -191,6 +192,8 @@ pub struct RequestError {
 
     /// The ID of the failed charge, if applicable.
     pub charge: Option<String>,
+
+    pub payment_intent: Option<PaymentIntent>
 }
 
 /// The structure of the json body when an error is included in
