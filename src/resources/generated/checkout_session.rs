@@ -115,8 +115,8 @@ pub struct CheckoutSession {
     pub invoice_creation: Option<PaymentPagesCheckoutSessionInvoiceCreation>,
 
     /// The line items purchased by the customer.
-    #[serde(default)]
-    pub line_items: List<CheckoutSessionItem>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub line_items: Option<List<CheckoutSessionItem>>,
 
     /// Has the value `true` if the object exists in live mode or the value `false` if the object exists in test mode.
     pub livemode: bool,
@@ -235,11 +235,12 @@ impl CheckoutSession {
         client: &Client,
         params: &ListCheckoutSessions<'_>,
     ) -> Response<List<CheckoutSession>> {
-        client.get_query("/checkout/sessions", &params)
+        client.get_query("/checkout/sessions", params)
     }
 
     /// Creates a Session object.
     pub fn create(client: &Client, params: CreateCheckoutSession<'_>) -> Response<CheckoutSession> {
+        #[allow(clippy::needless_borrows_for_generic_args)]
         client.post_form("/checkout/sessions", &params)
     }
 }
@@ -4721,6 +4722,7 @@ impl std::default::Default for CheckoutUsBankAccountPaymentMethodOptionsVerifica
 #[serde(rename_all = "snake_case")]
 pub enum CreateCheckoutSessionAutomaticTaxLiabilityType {
     Account,
+    #[serde(rename = "self")]
     Self_,
 }
 
@@ -5035,6 +5037,7 @@ impl std::default::Default for CreateCheckoutSessionCustomerUpdateShipping {
 #[serde(rename_all = "snake_case")]
 pub enum CreateCheckoutSessionInvoiceCreationInvoiceDataIssuerType {
     Account,
+    #[serde(rename = "self")]
     Self_,
 }
 
@@ -7857,6 +7860,7 @@ impl std::default::Default for CreateCheckoutSessionShippingOptionsShippingRateD
 #[serde(rename_all = "snake_case")]
 pub enum CreateCheckoutSessionSubscriptionDataInvoiceSettingsIssuerType {
     Account,
+    #[serde(rename = "self")]
     Self_,
 }
 

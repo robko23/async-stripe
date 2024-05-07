@@ -69,8 +69,8 @@ pub struct PaymentLink {
     pub invoice_creation: Option<PaymentLinksResourceInvoiceCreation>,
 
     /// The line items representing what is being sold.
-    #[serde(default)]
-    pub line_items: List<CheckoutSessionItem>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub line_items: Option<List<CheckoutSessionItem>>,
 
     /// Has the value `true` if the object exists in live mode or the value `false` if the object exists in test mode.
     pub livemode: bool,
@@ -127,17 +127,18 @@ pub struct PaymentLink {
 impl PaymentLink {
     /// Returns a list of your payment links.
     pub fn list(client: &Client, params: &ListPaymentLinks<'_>) -> Response<List<PaymentLink>> {
-        client.get_query("/payment_links", &params)
+        client.get_query("/payment_links", params)
     }
 
     /// Creates a payment link.
     pub fn create(client: &Client, params: CreatePaymentLink<'_>) -> Response<PaymentLink> {
+        #[allow(clippy::needless_borrows_for_generic_args)]
         client.post_form("/payment_links", &params)
     }
 
     /// Retrieve a payment link.
     pub fn retrieve(client: &Client, id: &PaymentLinkId, expand: &[&str]) -> Response<PaymentLink> {
-        client.get_query(&format!("/payment_links/{}", id), &Expand { expand })
+        client.get_query(&format!("/payment_links/{}", id), Expand { expand })
     }
 
     /// Updates a payment link.
@@ -146,6 +147,7 @@ impl PaymentLink {
         id: &PaymentLinkId,
         params: UpdatePaymentLink<'_>,
     ) -> Response<PaymentLink> {
+        #[allow(clippy::needless_borrows_for_generic_args)]
         client.post_form(&format!("/payment_links/{}", id), &params)
     }
 }
@@ -1788,6 +1790,7 @@ impl std::default::Default for CreatePaymentLinkAfterCompletionType {
 #[serde(rename_all = "snake_case")]
 pub enum CreatePaymentLinkAutomaticTaxLiabilityType {
     Account,
+    #[serde(rename = "self")]
     Self_,
 }
 
@@ -1996,6 +1999,7 @@ impl std::default::Default for CreatePaymentLinkCustomFieldsType {
 #[serde(rename_all = "snake_case")]
 pub enum CreatePaymentLinkInvoiceCreationInvoiceDataIssuerType {
     Account,
+    #[serde(rename = "self")]
     Self_,
 }
 
@@ -2967,6 +2971,7 @@ impl std::default::Default for CreatePaymentLinkShippingAddressCollectionAllowed
 #[serde(rename_all = "snake_case")]
 pub enum CreatePaymentLinkSubscriptionDataInvoiceSettingsIssuerType {
     Account,
+    #[serde(rename = "self")]
     Self_,
 }
 
@@ -4318,6 +4323,7 @@ impl std::default::Default for UpdatePaymentLinkAfterCompletionType {
 #[serde(rename_all = "snake_case")]
 pub enum UpdatePaymentLinkAutomaticTaxLiabilityType {
     Account,
+    #[serde(rename = "self")]
     Self_,
 }
 
@@ -4420,6 +4426,7 @@ impl std::default::Default for UpdatePaymentLinkCustomFieldsType {
 #[serde(rename_all = "snake_case")]
 pub enum UpdatePaymentLinkInvoiceCreationInvoiceDataIssuerType {
     Account,
+    #[serde(rename = "self")]
     Self_,
 }
 
@@ -5321,6 +5328,7 @@ impl std::default::Default for UpdatePaymentLinkShippingAddressCollectionAllowed
 #[serde(rename_all = "snake_case")]
 pub enum UpdatePaymentLinkSubscriptionDataInvoiceSettingsIssuerType {
     Account,
+    #[serde(rename = "self")]
     Self_,
 }
 

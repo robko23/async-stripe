@@ -198,7 +198,7 @@ pub struct PaymentIntent {
 impl PaymentIntent {
     /// Returns a list of PaymentIntents.
     pub fn list(client: &Client, params: &ListPaymentIntents<'_>) -> Response<List<PaymentIntent>> {
-        client.get_query("/payment_intents", &params)
+        client.get_query("/payment_intents", params)
     }
 
     /// Creates a PaymentIntent object.
@@ -209,6 +209,7 @@ impl PaymentIntent {
     /// Learn more about [the available payment flows with the Payment Intents API](https://stripe.com/docs/payments/payment-intents).  When you use `confirm=true` during creation, it’s equivalent to creating and confirming the PaymentIntent in the same call.
     /// You can use any parameters available in the [confirm API](https://stripe.com/docs/api/payment_intents/confirm) when you supply `confirm=true`.
     pub fn create(client: &Client, params: CreatePaymentIntent<'_>) -> Response<PaymentIntent> {
+        #[allow(clippy::needless_borrows_for_generic_args)]
         client.post_form("/payment_intents", &params)
     }
 
@@ -222,7 +223,7 @@ impl PaymentIntent {
         id: &PaymentIntentId,
         expand: &[&str],
     ) -> Response<PaymentIntent> {
-        client.get_query(&format!("/payment_intents/{}", id), &Expand { expand })
+        client.get_query(&format!("/payment_intents/{}", id), Expand { expand })
     }
 
     /// Updates properties on a PaymentIntent object without confirming.
@@ -237,6 +238,7 @@ impl PaymentIntent {
         id: &PaymentIntentId,
         params: UpdatePaymentIntent<'_>,
     ) -> Response<PaymentIntent> {
+        #[allow(clippy::needless_borrows_for_generic_args)]
         client.post_form(&format!("/payment_intents/{}", id), &params)
     }
 }
@@ -901,7 +903,15 @@ pub struct PaymentIntentPaymentMethodOptionsAuBecsDebit {
 }
 
 #[derive(Clone, Debug, Default, Deserialize, Serialize)]
-pub struct PaymentIntentPaymentMethodOptionsBlik {}
+pub struct PaymentIntentPaymentMethodOptionsBlik {
+    /// Indicates that you intend to make future payments with this PaymentIntent's payment method.
+    ///
+    /// Providing this parameter will [attach the payment method](https://stripe.com/docs/payments/save-during-payment) to the PaymentIntent's Customer, if present, after the PaymentIntent is confirmed and any required actions from the user are complete.
+    ///
+    /// If no Customer was provided, the payment method can still be [attached](https://stripe.com/docs/api/payment_methods/attach) to a Customer after the transaction completes.  When processing card payments, Stripe also uses `setup_future_usage` to dynamically optimize your payment flow and comply with regional legislation and network rules, such as [SCA](https://stripe.com/docs/strong-customer-authentication).
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub setup_future_usage: Option<PaymentIntentPaymentMethodOptionsBlikSetupFutureUsage>,
+}
 
 #[derive(Clone, Debug, Default, Deserialize, Serialize)]
 pub struct PaymentIntentPaymentMethodOptionsCard {
@@ -947,6 +957,12 @@ pub struct PaymentIntentPaymentMethodOptionsCard {
     /// If not provided, this value defaults to `automatic`.
     /// Read our guide on [manually requesting 3D Secure](https://stripe.com/docs/payments/3d-secure#manual-three-ds) for more information on how this configuration interacts with Radar and our SCA Engine.
     pub request_three_d_secure: Option<PaymentIntentPaymentMethodOptionsCardRequestThreeDSecure>,
+
+    /// When enabled, using a card that is attached to a customer will require the CVC to be provided again (i.e.
+    ///
+    /// using the cvc_token parameter).
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub require_cvc_recollection: Option<bool>,
 
     /// Indicates that you intend to make future payments with this PaymentIntent's payment method.
     ///
@@ -3059,6 +3075,14 @@ pub struct CreatePaymentIntentPaymentMethodOptionsBlik {
     /// Can only be set on confirmation.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub code: Option<String>,
+
+    /// Indicates that you intend to make future payments with this PaymentIntent's payment method.
+    ///
+    /// Providing this parameter will [attach the payment method](https://stripe.com/docs/payments/save-during-payment) to the PaymentIntent's Customer, if present, after the PaymentIntent is confirmed and any required actions from the user are complete.
+    ///
+    /// If no Customer was provided, the payment method can still be [attached](https://stripe.com/docs/api/payment_methods/attach) to a Customer after the transaction completes.  When processing card payments, Stripe also uses `setup_future_usage` to dynamically optimize your payment flow and comply with regional legislation and network rules, such as [SCA](https://stripe.com/docs/strong-customer-authentication).  If `setup_future_usage` is already set and you are performing a request using a publishable key, you may only update the value from `on_session` to `off_session`.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub setup_future_usage: Option<CreatePaymentIntentPaymentMethodOptionsBlikSetupFutureUsage>,
 }
 
 #[derive(Clone, Debug, Default, Deserialize, Serialize)]
@@ -3146,6 +3170,12 @@ pub struct CreatePaymentIntentPaymentMethodOptionsCard {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub request_three_d_secure:
         Option<CreatePaymentIntentPaymentMethodOptionsCardRequestThreeDSecure>,
+
+    /// When enabled, using a card that is attached to a customer will require the CVC to be provided again (i.e.
+    ///
+    /// using the cvc_token parameter).
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub require_cvc_recollection: Option<bool>,
 
     /// Indicates that you intend to make future payments with this PaymentIntent's payment method.
     ///
@@ -3964,6 +3994,14 @@ pub struct UpdatePaymentIntentPaymentMethodOptionsBlik {
     /// Can only be set on confirmation.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub code: Option<String>,
+
+    /// Indicates that you intend to make future payments with this PaymentIntent's payment method.
+    ///
+    /// Providing this parameter will [attach the payment method](https://stripe.com/docs/payments/save-during-payment) to the PaymentIntent's Customer, if present, after the PaymentIntent is confirmed and any required actions from the user are complete.
+    ///
+    /// If no Customer was provided, the payment method can still be [attached](https://stripe.com/docs/api/payment_methods/attach) to a Customer after the transaction completes.  When processing card payments, Stripe also uses `setup_future_usage` to dynamically optimize your payment flow and comply with regional legislation and network rules, such as [SCA](https://stripe.com/docs/strong-customer-authentication).  If `setup_future_usage` is already set and you are performing a request using a publishable key, you may only update the value from `on_session` to `off_session`.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub setup_future_usage: Option<UpdatePaymentIntentPaymentMethodOptionsBlikSetupFutureUsage>,
 }
 
 #[derive(Clone, Debug, Default, Deserialize, Serialize)]
@@ -4051,6 +4089,12 @@ pub struct UpdatePaymentIntentPaymentMethodOptionsCard {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub request_three_d_secure:
         Option<UpdatePaymentIntentPaymentMethodOptionsCardRequestThreeDSecure>,
+
+    /// When enabled, using a card that is attached to a customer will require the CVC to be provided again (i.e.
+    ///
+    /// using the cvc_token parameter).
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub require_cvc_recollection: Option<bool>,
 
     /// Indicates that you intend to make future payments with this PaymentIntent's payment method.
     ///
@@ -5516,6 +5560,7 @@ pub enum CreatePaymentIntentPaymentMethodDataP24Bank {
     SantanderPrzelew24,
     TmobileUsbugiBankowe,
     ToyotaBank,
+    Velobank,
     VolkswagenBank,
 }
 
@@ -5552,6 +5597,7 @@ impl CreatePaymentIntentPaymentMethodDataP24Bank {
                 "tmobile_usbugi_bankowe"
             }
             CreatePaymentIntentPaymentMethodDataP24Bank::ToyotaBank => "toyota_bank",
+            CreatePaymentIntentPaymentMethodDataP24Bank::Velobank => "velobank",
             CreatePaymentIntentPaymentMethodDataP24Bank::VolkswagenBank => "volkswagen_bank",
         }
     }
@@ -6267,6 +6313,38 @@ impl std::fmt::Display for CreatePaymentIntentPaymentMethodOptionsBancontactSetu
     }
 }
 impl std::default::Default for CreatePaymentIntentPaymentMethodOptionsBancontactSetupFutureUsage {
+    fn default() -> Self {
+        Self::None
+    }
+}
+
+/// An enum representing the possible values of an `CreatePaymentIntentPaymentMethodOptionsBlik`'s `setup_future_usage` field.
+#[derive(Copy, Clone, Debug, Deserialize, Serialize, Eq, PartialEq)]
+#[serde(rename_all = "snake_case")]
+pub enum CreatePaymentIntentPaymentMethodOptionsBlikSetupFutureUsage {
+    None,
+}
+
+impl CreatePaymentIntentPaymentMethodOptionsBlikSetupFutureUsage {
+    pub fn as_str(self) -> &'static str {
+        match self {
+            CreatePaymentIntentPaymentMethodOptionsBlikSetupFutureUsage::None => "none",
+        }
+    }
+}
+
+impl AsRef<str> for CreatePaymentIntentPaymentMethodOptionsBlikSetupFutureUsage {
+    fn as_ref(&self) -> &str {
+        self.as_str()
+    }
+}
+
+impl std::fmt::Display for CreatePaymentIntentPaymentMethodOptionsBlikSetupFutureUsage {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        self.as_str().fmt(f)
+    }
+}
+impl std::default::Default for CreatePaymentIntentPaymentMethodOptionsBlikSetupFutureUsage {
     fn default() -> Self {
         Self::None
     }
@@ -9085,6 +9163,38 @@ impl std::default::Default for PaymentIntentPaymentMethodOptionsAuBecsDebitSetup
     }
 }
 
+/// An enum representing the possible values of an `PaymentIntentPaymentMethodOptionsBlik`'s `setup_future_usage` field.
+#[derive(Copy, Clone, Debug, Deserialize, Serialize, Eq, PartialEq)]
+#[serde(rename_all = "snake_case")]
+pub enum PaymentIntentPaymentMethodOptionsBlikSetupFutureUsage {
+    None,
+}
+
+impl PaymentIntentPaymentMethodOptionsBlikSetupFutureUsage {
+    pub fn as_str(self) -> &'static str {
+        match self {
+            PaymentIntentPaymentMethodOptionsBlikSetupFutureUsage::None => "none",
+        }
+    }
+}
+
+impl AsRef<str> for PaymentIntentPaymentMethodOptionsBlikSetupFutureUsage {
+    fn as_ref(&self) -> &str {
+        self.as_str()
+    }
+}
+
+impl std::fmt::Display for PaymentIntentPaymentMethodOptionsBlikSetupFutureUsage {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        self.as_str().fmt(f)
+    }
+}
+impl std::default::Default for PaymentIntentPaymentMethodOptionsBlikSetupFutureUsage {
+    fn default() -> Self {
+        Self::None
+    }
+}
+
 /// An enum representing the possible values of an `PaymentIntentPaymentMethodOptionsCard`'s `capture_method` field.
 #[derive(Copy, Clone, Debug, Deserialize, Serialize, Eq, PartialEq)]
 #[serde(rename_all = "snake_case")]
@@ -11483,6 +11593,7 @@ pub enum UpdatePaymentIntentPaymentMethodDataP24Bank {
     SantanderPrzelew24,
     TmobileUsbugiBankowe,
     ToyotaBank,
+    Velobank,
     VolkswagenBank,
 }
 
@@ -11519,6 +11630,7 @@ impl UpdatePaymentIntentPaymentMethodDataP24Bank {
                 "tmobile_usbugi_bankowe"
             }
             UpdatePaymentIntentPaymentMethodDataP24Bank::ToyotaBank => "toyota_bank",
+            UpdatePaymentIntentPaymentMethodDataP24Bank::Velobank => "velobank",
             UpdatePaymentIntentPaymentMethodDataP24Bank::VolkswagenBank => "volkswagen_bank",
         }
     }
@@ -12234,6 +12346,38 @@ impl std::fmt::Display for UpdatePaymentIntentPaymentMethodOptionsBancontactSetu
     }
 }
 impl std::default::Default for UpdatePaymentIntentPaymentMethodOptionsBancontactSetupFutureUsage {
+    fn default() -> Self {
+        Self::None
+    }
+}
+
+/// An enum representing the possible values of an `UpdatePaymentIntentPaymentMethodOptionsBlik`'s `setup_future_usage` field.
+#[derive(Copy, Clone, Debug, Deserialize, Serialize, Eq, PartialEq)]
+#[serde(rename_all = "snake_case")]
+pub enum UpdatePaymentIntentPaymentMethodOptionsBlikSetupFutureUsage {
+    None,
+}
+
+impl UpdatePaymentIntentPaymentMethodOptionsBlikSetupFutureUsage {
+    pub fn as_str(self) -> &'static str {
+        match self {
+            UpdatePaymentIntentPaymentMethodOptionsBlikSetupFutureUsage::None => "none",
+        }
+    }
+}
+
+impl AsRef<str> for UpdatePaymentIntentPaymentMethodOptionsBlikSetupFutureUsage {
+    fn as_ref(&self) -> &str {
+        self.as_str()
+    }
+}
+
+impl std::fmt::Display for UpdatePaymentIntentPaymentMethodOptionsBlikSetupFutureUsage {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        self.as_str().fmt(f)
+    }
+}
+impl std::default::Default for UpdatePaymentIntentPaymentMethodOptionsBlikSetupFutureUsage {
     fn default() -> Self {
         Self::None
     }

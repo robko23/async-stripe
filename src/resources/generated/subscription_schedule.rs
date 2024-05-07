@@ -93,7 +93,7 @@ impl SubscriptionSchedule {
         client: &Client,
         params: &ListSubscriptionSchedules<'_>,
     ) -> Response<List<SubscriptionSchedule>> {
-        client.get_query("/subscription_schedules", &params)
+        client.get_query("/subscription_schedules", params)
     }
 
     /// Creates a new subscription schedule object.
@@ -103,6 +103,7 @@ impl SubscriptionSchedule {
         client: &Client,
         params: CreateSubscriptionSchedule<'_>,
     ) -> Response<SubscriptionSchedule> {
+        #[allow(clippy::needless_borrows_for_generic_args)]
         client.post_form("/subscription_schedules", &params)
     }
 
@@ -114,7 +115,7 @@ impl SubscriptionSchedule {
         id: &SubscriptionScheduleId,
         expand: &[&str],
     ) -> Response<SubscriptionSchedule> {
-        client.get_query(&format!("/subscription_schedules/{}", id), &Expand { expand })
+        client.get_query(&format!("/subscription_schedules/{}", id), Expand { expand })
     }
 
     /// Updates an existing subscription schedule.
@@ -123,6 +124,7 @@ impl SubscriptionSchedule {
         id: &SubscriptionScheduleId,
         params: UpdateSubscriptionSchedule<'_>,
     ) -> Response<SubscriptionSchedule> {
+        #[allow(clippy::needless_borrows_for_generic_args)]
         client.post_form(&format!("/subscription_schedules/{}", id), &params)
     }
 }
@@ -1287,6 +1289,7 @@ pub struct UpdateSubscriptionSchedulePhasesItemsPriceDataRecurring {
 #[serde(rename_all = "snake_case")]
 pub enum CreateSubscriptionSchedulePhasesAutomaticTaxLiabilityType {
     Account,
+    #[serde(rename = "self")]
     Self_,
 }
 
@@ -1571,6 +1574,7 @@ impl std::default::Default for SubscriptionScheduleDefaultSettingsCollectionMeth
 #[serde(rename_all = "snake_case")]
 pub enum SubscriptionScheduleDefaultSettingsParamsAutomaticTaxLiabilityType {
     Account,
+    #[serde(rename = "self")]
     Self_,
 }
 
@@ -1681,6 +1685,7 @@ impl std::default::Default for SubscriptionScheduleEndBehavior {
 #[serde(rename_all = "snake_case")]
 pub enum SubscriptionScheduleInvoiceSettingsIssuerType {
     Account,
+    #[serde(rename = "self")]
     Self_,
 }
 
@@ -1789,6 +1794,7 @@ impl std::default::Default for SubscriptionScheduleStatus {
 #[serde(rename_all = "snake_case")]
 pub enum UpdateSubscriptionSchedulePhasesAutomaticTaxLiabilityType {
     Account,
+    #[serde(rename = "self")]
     Self_,
 }
 
