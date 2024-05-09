@@ -483,6 +483,9 @@ pub enum EventObject {
     TestHelpersTestClock(TestHelpersTestClock),
     Topup(Topup),
     Transfer(Transfer),
+
+    #[serde(untagged)]
+    Unknown(serde_json::Value)
 }
 
 impl Default for EventObject {
