@@ -92,6 +92,12 @@ mod orders {
 }
 
 #[path = "resources"]
+#[cfg(feature = "reporting")]
+mod reporting {
+    pub mod reporting_ext;
+}
+
+#[path = "resources"]
 #[cfg(feature = "webhook-endpoints")]
 mod webhook_endpoints {
     pub mod webhook_endpoint_ext;
@@ -334,6 +340,19 @@ pub use {
         terminal_location::*,
         terminal_reader::*,
     },
+};
+
+#[rustfmt::skip]
+#[cfg(feature = "reporting")]
+pub use {
+    generated::reporting::{
+        reporting_report_run::*,
+        reporting_report_type::*,
+        reporting_report_run_failed,
+        reporting_report_type_updated::*,
+        reporting_report_run_succeeded::*,
+    },
+    reporting::reporting_ext::*,
 };
 
 #[rustfmt::skip]

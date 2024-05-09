@@ -168,5 +168,15 @@ pub mod webhook_endpoints {
     pub mod webhook_endpoint;
 }
 
+#[path = "generated"]
+#[cfg(feature = "reporting")]
+pub mod reporting {
+    pub mod reporting_report_run;
+    pub mod reporting_report_run_failed;
+    pub mod reporting_report_run_succeeded;
+    pub mod reporting_report_type;
+    pub mod reporting_report_type_updated;
+}
+
 #[cfg(not(feature = "full"))]
 pub mod placeholders;

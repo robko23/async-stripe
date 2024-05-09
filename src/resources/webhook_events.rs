@@ -258,6 +258,8 @@ pub enum EventType {
     PayoutPaid,
     #[serde(rename = "payout.updated")]
     PayoutUpdated,
+    #[serde(rename = "payout.reconciliation_completed")]
+    PayoutReconciliationCompleted,
     #[serde(rename = "person.created")]
     PersonCreated,
     #[serde(rename = "person.deleted")]

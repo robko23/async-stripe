@@ -597,6 +597,8 @@ def_id!(TransferReversalId, "trr_");
 def_id!(UsageRecordId, "mbur_");
 def_id!(UsageRecordSummaryId, "urs_" | "sis_");
 def_id!(WebhookEndpointId, "we_");
+def_id!(ReportingReportRunId, "frr_");
+def_id!(ReportingReportTypeId: String);
 
 impl InvoiceId {
     pub(crate) fn none() -> Self {
