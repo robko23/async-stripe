@@ -486,6 +486,11 @@ pub enum EventObject {
     Topup(Topup),
     Transfer(Transfer),
 
+    #[serde(rename = "reporting.report_run")]
+    ReportRun(ReportingReportRun),
+    #[serde(rename = "reporting.report_type")]
+    ReportType(ReportingReportType),
+
     #[serde(untagged)]
     Unknown(serde_json::Value)
 }

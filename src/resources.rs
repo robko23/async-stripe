@@ -95,6 +95,7 @@ mod orders {
 #[cfg(feature = "reporting")]
 mod reporting {
     pub mod reporting_ext;
+    pub mod reporting_types_ext;
 }
 
 #[path = "resources"]
@@ -353,6 +354,7 @@ pub use {
         reporting_report_run_succeeded::*,
     },
     reporting::reporting_ext::*,
+    reporting::reporting_types_ext::*,
 };
 
 #[rustfmt::skip]
