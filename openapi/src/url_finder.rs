@@ -23,7 +23,7 @@ impl UrlFinder {
                 let initial_state: StripeInitialState = serde_json::from_str(
                     line.trim()
                         .trim_start_matches("window.__INITIAL_STATE__ = ")
-                        .trim_end_matches(";"),
+                        .trim_end_matches(';'),
                 )
                 .expect("should be valid json");
                 Ok(Self { url_lookup: initial_state.into() })
@@ -42,7 +42,7 @@ impl UrlFinder {
         let object_names = [format!("{}_object", object_name), object_name];
         for name in object_names {
             if let Some(path) = self.url_lookup.get(&name) {
-                return Some(format!("https://stripe.com{}", path));
+                return Some(format!("https://stripe.com/docs{}", path));
             }
         }
 
