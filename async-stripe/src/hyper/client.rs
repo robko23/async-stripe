@@ -109,7 +109,9 @@ impl Client {
         let mut last_error = StripeError::ClientError("invalid strategy".into());
 
         if let Some(key) = strategy.get_key() {
-            req_builder = req_builder.header(HeaderName::from_static("Idempotency-Key"), key);
+            const HEADER_NAME: HeaderName = HeaderName::from_static("idempotency-key");
+            assert!(!key.is_empty(), "idempotency key is empty");
+            req_builder = req_builder.header(HEADER_NAME, key);
         }
 
         loop {
