@@ -110,8 +110,7 @@ impl Client {
 
         if let Some(key) = strategy.get_key() {
             const HEADER_NAME: HeaderName = HeaderName::from_static("idempotency-key");
-            assert!(!key.is_empty(), "idempotency key is empty");
-            req_builder = req_builder.header(HEADER_NAME, key);
+            req_builder = req_builder.header(HEADER_NAME, key.as_str());
         }
 
         loop {
